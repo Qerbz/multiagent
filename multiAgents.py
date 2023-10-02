@@ -15,8 +15,10 @@
 from util import manhattanDistance
 from game import Directions
 import random, util
+import itertools
 
 from game import Agent
+from pacman import GameState
 
 class ReflexAgent(Agent):
     """
@@ -107,35 +109,52 @@ class MultiAgentSearchAgent(Agent):
         self.depth = int(depth)
 
 class MinimaxAgent(MultiAgentSearchAgent):
-    """
-    Your minimax agent (question 2)
-    """
 
     def getAction(self, gameState):
-        """
-        Returns the minimax action from the current gameState using self.depth
-        and self.evaluationFunction.
+        def utility(gameState) -> int:
+            return gameState.getScore()
+        
+        def is_terminal(gameState: GameState) -> bool:
+            return gameState.isWin() or gameState.isLose()
+        
+        def possible_ghost_moves(gameState: GameState) -> list[tuple[int,int]]:
+            return itertools.product(gameState.getLegalActions(1),
+                                     gameState.getLegalActions(2),
+                                     gameState.getLegalActions(3),
+                                     gameState.getLegalActions(4))
+        
+        def max_value(gameState: GameState) -> tuple[int, tuple[int,int]]:
+            if is_terminal(gameState):
+                return utility(gameState), None
+            v, move = (-float('inf'),) * 2
+            for action in gameState.getLegalActions(0):
+                gameStateCopy = gameState.generateSuccessor(0, action)
+                v2: int = min_value(gameState)
+                if v2 > v:
+                    v, move = v2, action
+            return v, move
+                
+                
+        def min_value(gameState: GameState) -> int:
+            if is_terminal(gameState):
+                return utility(gameState), None
+            v = float('inf')
+            for actions in possible_ghost_moves(gameState):
+                succ = None
+                # Generate new gamestate with the ghosts having performed these four actions
+                for i in range(4):
+                    succ = gameState.generateSuccessor(i+1, actions[i])
+                v2, _ = max_value(succ)
+                if(v2 < v):
+                    v = v2
+            return v
+        
+        
+        # Move is pacmans next move
+        _, move = max_value(gameState)
+        return move
 
-        Here are some method calls that might be useful when implementing minimax.
-
-        gameState.getLegalActions(agentIndex):
-        Returns a list of legal actions for an agent
-        agentIndex=0 means Pacman, ghosts are >= 1
-
-        gameState.generateSuccessor(agentIndex, action):
-        Returns the successor game state after an agent takes an action
-
-        gameState.getNumAgents():
-        Returns the total number of agents in the game
-
-        gameState.isWin():
-        Returns whether or not the game state is a winning state
-
-        gameState.isLose():
-        Returns whether or not the game state is a losing state
-        """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+    
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
