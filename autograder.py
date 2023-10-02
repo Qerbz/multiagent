@@ -76,7 +76,7 @@ def readCommand(argv):
                       help='Run one particular test.  Relative to test root.')
     parser.add_option('--question', '-q',
                       dest='gradeQuestion',
-                      default=None,
+                      default='q2', # Her sedde me default
                       help='Grade one particular question.')
     parser.add_option('--no-graphics',
                       dest='noGraphics',

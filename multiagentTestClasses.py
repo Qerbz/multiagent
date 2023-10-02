@@ -358,7 +358,7 @@ class PacmanGameTreeTest(testClasses.TestCase):
             return self.testPass(grades)
         elif code == -3:
             if pac.getWrongStatesExplored() >= 0:
-                self.addMessage('Bug: Wrong number of states expanded.')
+                self.addMessage('Bug: Wrong number of states expanded')
                 return self.testFail(grades)
             else:
                 return self.testPass(grades)

@@ -69,7 +69,7 @@ class ReflexAgent(Agent):
         to create a masterful evaluation function.
         """
         # Useful information you can extract from a GameState (pacman.py)
-        successorGameState = currentGameState.generatePacmanSuccessor(action)
+        successorGameState: GameState = currentGameState.generatePacmanSuccessor(action)
         newPos = successorGameState.getPacmanPosition()
         newFood = successorGameState.getFood()
         newGhostStates = successorGameState.getGhostStates()
@@ -78,7 +78,7 @@ class ReflexAgent(Agent):
         "*** YOUR CODE HERE ***"
         return successorGameState.getScore()
 
-def scoreEvaluationFunction(currentGameState):
+def scoreEvaluationFunction(currentGameState: GameState):
     """
     This default evaluation function just returns the score of the state.
     The score is the same one displayed in the Pacman GUI.
@@ -110,48 +110,53 @@ class MultiAgentSearchAgent(Agent):
 
 class MinimaxAgent(MultiAgentSearchAgent):
 
-    def getAction(self, gameState):
+    def getAction(self, gameState: GameState):
+
         def utility(gameState) -> int:
-            return gameState.getScore()
+            return self.evaluationFunction(gameState)
         
-        def is_terminal(gameState: GameState) -> bool:
-            return gameState.isWin() or gameState.isLose()
+        def is_terminal(gameState: GameState, currDepth: int) -> bool:
+            return gameState.isWin() or gameState.isLose() or currDepth >= self.depth
         
-        def possible_ghost_moves(gameState: GameState) -> list[tuple[int,int]]:
-            return itertools.product(gameState.getLegalActions(1),
-                                     gameState.getLegalActions(2),
-                                     gameState.getLegalActions(3),
-                                     gameState.getLegalActions(4))
+        def possible_ghost_moves(gameState: GameState) -> list[tuple[str]]:
+            try:
+                args = [gameState.getLegalActions(i) for i in range(1,gameState.getNumAgents())]
+                return itertools.product(*args)
+            except:
+                print(gameState)
         
-        def max_value(gameState: GameState) -> tuple[int, tuple[int,int]]:
-            if is_terminal(gameState):
+        def max_value(gameState: GameState, currDepth: int) -> tuple[int, tuple[int,int]]:
+            if is_terminal(gameState, currDepth):
                 return utility(gameState), None
-            v, move = (-float('inf'),) * 2
+            v, move = (-float('inf'),)*2
             for action in gameState.getLegalActions(0):
                 gameStateCopy = gameState.generateSuccessor(0, action)
-                v2: int = min_value(gameState)
+                v2: int = min_value(gameStateCopy, currDepth)
                 if v2 > v:
                     v, move = v2, action
             return v, move
                 
                 
-        def min_value(gameState: GameState) -> int:
-            if is_terminal(gameState):
-                return utility(gameState), None
+        def min_value(gameState: GameState, currDepth: int) -> int:
+            if is_terminal(gameState, currDepth):
+                return utility(gameState)
             v = float('inf')
             for actions in possible_ghost_moves(gameState):
-                succ = None
+                succ = gameState
                 # Generate new gamestate with the ghosts having performed these four actions
-                for i in range(4):
-                    succ = gameState.generateSuccessor(i+1, actions[i])
-                v2, _ = max_value(succ)
-                if(v2 < v):
+                for i in range(gameState.getNumAgents()-1):
+                    succ = succ.generateSuccessor(i+1, actions[i])
+                    if is_terminal(succ, currDepth):
+                        return utility(succ)
+                v2, _ = max_value(succ, currDepth + 1)
+                if v2 < v:
                     v = v2
             return v
         
         
         # Move is pacmans next move
-        _, move = max_value(gameState)
+        _, move = max_value(gameState, 0)
+        # print("Final:",move)
         return move
 
     
