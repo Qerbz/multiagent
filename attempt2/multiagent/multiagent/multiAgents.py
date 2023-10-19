@@ -163,10 +163,10 @@ class MinimaxAgent(MultiAgentSearchAgent):
             else:
                 v = float('inf')
                 legal_actions = gameState.getLegalActions(agent_index)
+                if agent_index == gameState.getNumAgents() - 1: #todo wtf
+                    remaining_depth -= 1
                 for action in legal_actions:
                     new_gameState = gameState.generateSuccessor(agent_index, action)
-                    if agent_index == gameState.getNumAgents() - 1: #todo wtf
-                        remaining_depth -= 1
                     v = min(v, minimax(new_gameState, remaining_depth, (agent_index + 1 ) % gameState.getNumAgents())[0])
                 return v, None
 
