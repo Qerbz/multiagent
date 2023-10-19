@@ -15,6 +15,10 @@
 from util import manhattanDistance
 from game import Directions
 import random, util
+try:
+    from pacman import GameState
+except:
+    pass
 
 from game import Agent
 
@@ -135,8 +139,40 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        def isTerminal(gameState: GameState, remaining_depth):
+            return gameState.isWin() or gameState.isLose() or remaining_depth == 0
+        def minimax(gameState: GameState, remaining_depth, agent_index):
+            if isTerminal(gameState, remaining_depth):
+                return self.evaluationFunction(gameState), None
 
+            # Pacman
+            if agent_index == 0:
+                v = float('-inf')
+                next_actions = gameState.getLegalActions(0)
+                final_action = None
+                previous_v = v
+                for action in next_actions:
+                    new_gameState = gameState.generateSuccessor(0, action)
+                    v = max(v, minimax(new_gameState, remaining_depth, agent_index + 1)[0])
+                    if v != previous_v:
+                        final_action = action
+                        previous_v = v
+                return v, final_action
+
+            # Ghost
+            else:
+                v = float('inf')
+                legal_actions = gameState.getLegalActions(agent_index)
+                for action in legal_actions:
+                    new_gameState = gameState.generateSuccessor(agent_index, action)
+                    if agent_index == gameState.getNumAgents() - 1: #todo wtf
+                        remaining_depth -= 1
+                    v = min(v, minimax(new_gameState, remaining_depth, (agent_index + 1 ) % gameState.getNumAgents())[0])
+                return v, None
+
+        _, action = minimax(gameState, self.depth, 0)
+        return action
+    
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
     Your minimax agent with alpha-beta pruning (question 3)
