@@ -139,32 +139,52 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
-        def isTerminal(gameState: GameState, remaining_depth):
+        
+        def isTerminal(gameState: GameState, remaining_depth: int):
+            """
+            Returns true if game is finished or recursion depth is  reached
+            """
             return gameState.isWin() or gameState.isLose() or remaining_depth == 0
+        
+        # minimax
         def minimax(gameState: GameState, remaining_depth, agent_index):
+            """
+            Returns the best action based on the score of the game if everyone 
+            plays optimally.
+            """
+        
+            # Base case
             if isTerminal(gameState, remaining_depth):
                 return self.evaluationFunction(gameState), None
 
             # Pacman
             if agent_index == 0:
+                # Sentinel
                 v = float('-inf')
                 next_actions = gameState.getLegalActions(0)
+
                 final_action = None
                 previous_v = v
+                
                 for action in next_actions:
                     new_gameState = gameState.generateSuccessor(0, action)
                     v = max(v, minimax(new_gameState, remaining_depth, agent_index + 1)[0])
                     if v != previous_v:
                         final_action = action
                         previous_v = v
+                # we are ultimately looking for the action to be taken
                 return v, final_action
 
-            # Ghost
+            # Ghosts
             else:
+                # Sentinel
                 v = float('inf')
                 legal_actions = gameState.getLegalActions(agent_index)
-                if agent_index == gameState.getNumAgents() - 1: #todo wtf
+
+                # Only decrement depth when all agents have had a turn
+                if agent_index == gameState.getNumAgents() - 1:
                     remaining_depth -= 1
+                    
                 for action in legal_actions:
                     new_gameState = gameState.generateSuccessor(agent_index, action)
                     v = min(v, minimax(new_gameState, remaining_depth, (agent_index + 1 ) % gameState.getNumAgents())[0])
@@ -203,18 +223,29 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             Returns whether or not the game state is a losing state
             """
             "*** YOUR CODE HERE ***"
+
             def isTerminal(gameState: GameState, remaining_depth):
+                """
+                Returns true if game is finished or recursion depth is  reached
+                """
                 return gameState.isWin() or gameState.isLose() or remaining_depth == 0
             def minimax(gameState: GameState, remaining_depth, agent_index, alpha, beta):
+                """
+                Returns the best action based on the score of the game if everyone 
+                plays optimally.
+                """
                 if isTerminal(gameState, remaining_depth):
                     return self.evaluationFunction(gameState), None
 
                 # Pacman
                 if agent_index == 0:
+                    # Sentinel
                     v = float('-inf')
                     next_actions = gameState.getLegalActions(0)
+
                     final_action = None
                     previous_v = v
+
                     for action in next_actions:
                         new_gameState = gameState.generateSuccessor(0, action)
                         v = max(v, minimax(new_gameState, remaining_depth, agent_index + 1, alpha, beta)[0])
@@ -224,14 +255,20 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                         alpha = max(alpha, v)
                         if beta < alpha:
                             break
+                        
+                    # we are ultimately looking for the action to be taken
                     return v, final_action
 
-                # Ghost
+                # Ghosts
                 else:
+                    # Sentinel
                     v = float('inf')
                     legal_actions = gameState.getLegalActions(agent_index)
-                    if agent_index == gameState.getNumAgents() - 1: #todo wtf
+
+                    # Only decrement depth when all agents have had a turn
+                    if agent_index == gameState.getNumAgents() - 1:
                         remaining_depth -= 1
+
                     for action in legal_actions:
                         new_gameState = gameState.generateSuccessor(agent_index, action)
                         v = min(v, minimax(new_gameState, remaining_depth, (agent_index + 1 ) % gameState.getNumAgents(), alpha, beta)[0])
