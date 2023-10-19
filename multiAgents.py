@@ -174,6 +174,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         return action
     
 class AlphaBetaAgent(MultiAgentSearchAgent):
+    # Implemented using minimax with this pseudocode for alpha-beta pruning: https://www.geeksforgeeks.org/minimax-algorithm-in-game-theory-set-4-alpha-beta-pruning/
     """
     Your minimax agent with alpha-beta pruning (question 3)
     """
